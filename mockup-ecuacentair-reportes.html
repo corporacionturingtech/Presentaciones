@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reportes al aeropuerto · Prototipo para Ecuacentair</title>
+<meta name="description" content="Prototipo elaborado por Turingtech: del Excel del proveedor contable al reporte de ventas del aeropuerto, revisado y listo en un clic. Datos ilustrativos.">
+<!--
+  Prototipo para Ecuacentair Cia Ltda (reunión 2, 4 de noviembre de 2026).
+  Fuente: turingtech-docs/comercial/Ecuasentair/mockup_ecuacentair_reportes.html
+  Copia publicada: repo Presentaciones, mockup-ecuacentair-reportes.html (GitHub Pages).
+  Todo es ilustrativo: operadores, matrículas, servicios, precios unitarios y columnas del reporte.
+  Las cifras salen del bloque DATA y se calculan; ninguna se escribe a mano.
+-->
+<style>
+:root{
+  --c-primary:#0055B8; --c-primary-dk:#003F8A; --c-accent:#0099CC; --c-ink:#000033;
+  --c-text:#1E2433; --c-muted:#5B6474; --c-border:#D9E0EA; --c-bg:#F4F7FB; --c-white:#FFFFFF;
+  --c-ok:#1A7F4B; --c-ok-bg:#E6F4EC; --c-warn:#A15C00; --c-warn-bg:#FFF4E0; --c-bad:#B42318; --c-bad-bg:#FDECEA;
+  --c-soft:#E8F1FB;
+  --f-body: Arial, "Liberation Sans", "DejaVu Sans", sans-serif;
+  --f-head: "Segoe UI", "Noto Sans", "DejaVu Sans", sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--f-body);color:var(--c-text);background:var(--c-bg);font-size:15px;line-height:1.45;-webkit-text-size-adjust:100%}
+button{font:inherit;cursor:pointer}
+h1,h2,h3{font-family:var(--f-head);color:var(--c-ink);margin:0}
+
+/* Barra superior */
+.top{background:var(--c-white);border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:14px;padding:10px 20px;flex-wrap:wrap}
+.top img{height:48px;width:auto;display:block}
+.top .ttl{display:flex;flex-direction:column;min-width:0}
+.top .ttl b{font-family:var(--f-head);font-size:17px;color:var(--c-ink)}
+.top .ttl span{font-size:12.5px;color:var(--c-muted)}
+.top .sp{flex:1}
+.badge-proto{background:var(--c-ink);color:#fff;font-size:11.5px;font-weight:700;letter-spacing:.06em;padding:5px 10px;border-radius:4px;white-space:nowrap}
+.btn-ghost{background:none;border:1px solid var(--c-border);color:var(--c-muted);border-radius:6px;padding:6px 12px;font-size:13px}
+.btn-ghost:hover{border-color:var(--c-primary);color:var(--c-primary)}
+
+/* Franja de entrega */
+.due{background:var(--c-ink);color:#fff;padding:8px 20px;font-size:13.5px;display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+.due b{color:#7FD3F0}
+
+/* Indicador de pasos */
+.steps{position:sticky;top:0;z-index:20;background:var(--c-white);border-bottom:1px solid var(--c-border);padding:10px 20px;display:flex;gap:6px;overflow-x:auto}
+.st{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:999px;border:1px solid transparent;background:none;color:var(--c-muted);font-size:14px;white-space:nowrap}
+.st .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--c-bg);border:1px solid var(--c-border);font-weight:700;font-size:13px;flex:none}
+.st.on{color:var(--c-ink);border-color:var(--c-primary);background:var(--c-soft);font-weight:700}
+.st.on .n{background:var(--c-primary);border-color:var(--c-primary);color:#fff}
+.st.done .n{background:var(--c-ok);border-color:var(--c-ok);color:#fff}
+.st:disabled{opacity:.5;cursor:default}
+
+/* Contenido */
+main{max-width:1180px;margin:0 auto;padding:22px 20px 40px;display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+.card{background:var(--c-white);border:1px solid var(--c-border);border-radius:10px;padding:22px;min-width:0}
+.step-head{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.step-head .k{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--c-accent);text-transform:uppercase}
+.step-head h2{font-size:24px}
+.step-head p{margin:0;color:var(--c-muted);max-width:760px}
+
+.ba{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--c-border);border-radius:8px;overflow:hidden;margin-bottom:18px}
+.ba div{padding:10px 14px;font-size:14px}
+.ba .antes{background:#F6F6F8;color:#4A4F5C}
+.ba .ahora{background:var(--c-soft);color:var(--c-ink)}
+.ba b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px}
+.ba .antes b{color:#8A8F9C}
+.ba .ahora b{color:var(--c-primary)}
+
+.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:20px;padding-top:16px;border-top:1px solid var(--c-border)}
+.actions .sp{flex:1}
+.btn{background:var(--c-primary);color:#fff;border:none;border-radius:8px;padding:12px 20px;font-weight:700;font-size:15px}
+.btn:hover{background:var(--c-primary-dk)}
+.btn.sec{background:var(--c-white);color:var(--c-primary);border:1px solid var(--c-primary)}
+.btn.sec:hover{background:var(--c-soft)}
+.btn.sm{padding:7px 12px;font-size:13.5px;border-radius:6px}
+.btn:disabled{opacity:.45;cursor:default}
+.link{background:none;border:none;color:var(--c-primary);text-decoration:underline;padding:0;font-size:14px}
+.hint{font-size:13px;color:var(--c-muted)}
+
+/* Paso 1: archivo */
+.drop{border:2px dashed #9DB7D9;border-radius:10px;padding:26px;display:flex;gap:18px;align-items:center;background:#FAFCFF;flex-wrap:wrap}
+.xls-ic{width:54px;height:62px;flex:none;border-radius:6px;background:#1D6F42;color:#fff;font-weight:800;display:grid;place-items:center;font-size:14px;position:relative}
+.xls-ic:after{content:"";position:absolute;right:0;top:0;border-style:solid;border-width:0 14px 14px 0;border-color:transparent #FAFCFF transparent transparent}
+.drop .info{flex:1;min-width:200px}
+.drop .info b{font-size:16px;color:var(--c-ink)}
+.drop .info div{font-size:13.5px;color:var(--c-muted)}
+.sheet{border:1px solid var(--c-border);border-radius:8px;overflow:hidden;margin-top:16px}
+.sheet-body{overflow:auto;max-height:360px}
+.tabs-x{display:flex;background:#F0F2F5;border-top:1px solid var(--c-border);overflow-x:auto}
+.tabs-x button{border:none;border-right:1px solid var(--c-border);background:none;padding:8px 14px;font-size:13px;color:var(--c-muted);white-space:nowrap}
+.tabs-x button.on{background:#fff;color:#1D6F42;font-weight:700;box-shadow:inset 0 -3px 0 #1D6F42}
+.tabs-x button small{color:#8A8F9C;font-weight:400}
+
+table.t{border-collapse:collapse;width:100%;font-size:13px}
+table.t th{background:#F0F4FA;color:var(--c-ink);text-align:left;font-weight:700;padding:7px 9px;border-bottom:1px solid var(--c-border);white-space:nowrap;position:sticky;top:0;z-index:1}
+table.t td{padding:6px 9px;border-bottom:1px solid #EEF1F5;white-space:nowrap}
+table.t td.n,table.t th.n{text-align:right;font-variant-numeric:tabular-nums}
+table.t tr.more td{color:var(--c-muted);font-style:italic;text-align:center}
+table.t tr.tot td{font-weight:700;background:#F6F9FD;border-top:2px solid var(--c-border)}
+table.t td.flag{background:var(--c-warn-bg);color:var(--c-warn);font-weight:700}
+table.t td.bad{background:var(--c-bad-bg);color:var(--c-bad);font-weight:700}
+table.t tr.hl td{background:#FFF9DB}
+.xl th{background:#E9EEF3!important;font-weight:600!important;color:#333!important}
+
+/* Paso 2: unir */
+.merge{display:grid;grid-template-columns:minmax(0,1fr) 60px minmax(0,1fr);gap:12px;align-items:center;margin-bottom:18px}
+.merge .arrow{font-size:34px;color:var(--c-accent);text-align:center}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;min-height:90px;align-content:center;position:relative}
+.chip{background:#fff;border:1px solid var(--c-border);border-left:4px solid #1D6F42;border-radius:6px;padding:8px 12px;font-size:13.5px;transition:transform .7s ease, opacity .7s ease}
+.chip small{display:block;color:var(--c-muted);font-size:12px}
+.one{border:2px solid var(--c-primary);border-radius:8px;padding:14px;text-align:center;background:var(--c-soft);opacity:.35;transition:opacity .5s ease}
+.one.on{opacity:1}
+.one b{font-size:16px;color:var(--c-ink);display:block}
+.merged .chip{transform:scale(.85);opacity:.35}
+.cmp{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:16px;margin:6px 0 18px}
+.cmp h3{font-size:14.5px;margin-bottom:6px}
+.cmp .box{border:1px solid var(--c-border);border-radius:8px;overflow:auto}
+.cmp .cap{font-size:12.5px;color:var(--c-muted);margin-top:6px}
+.fade-in{animation:fi .45s ease both}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+
+/* Paso 3: revisar */
+.rev{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:18px}
+.rev h3{font-size:16px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.cnt{font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px}
+.cnt.ok{background:var(--c-ok-bg);color:var(--c-ok)}
+.cnt.wa{background:var(--c-warn-bg);color:var(--c-warn)}
+ul.auto{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+ul.auto li{display:flex;gap:10px;font-size:14px;background:var(--c-ok-bg);border-radius:8px;padding:10px 12px}
+ul.auto li i{font-style:normal;color:var(--c-ok);font-weight:800}
+.aviso{border:1px solid #F0D29E;background:var(--c-warn-bg);border-radius:8px;padding:12px 14px;margin-bottom:10px}
+.aviso.ok{border-color:#A9D8BC;background:var(--c-ok-bg)}
+.aviso .h{display:flex;gap:8px;align-items:flex-start;font-weight:700;color:var(--c-ink)}
+.aviso .h i{font-style:normal;color:var(--c-warn)}
+.aviso.ok .h i{color:var(--c-ok)}
+.aviso p{margin:4px 0 8px 22px;font-size:13.5px;color:#4A4F5C}
+.aviso .do{margin-left:22px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.aviso input{border:1px solid var(--c-border);border-radius:6px;padding:7px 9px;font:inherit;font-size:14px;width:130px}
+.aviso .res{margin-left:22px;font-size:13.5px;color:var(--c-ok);font-weight:700}
+.cuadre{margin-top:18px;border:1px solid var(--c-border);border-radius:8px;overflow:auto}
+.cuadre .t td.dz{color:var(--c-ok);font-weight:700}
+.cuadre .t td.dn{color:var(--c-bad);font-weight:700}
+.cuadre-cap{font-size:12.5px;color:var(--c-muted);padding:8px 10px;background:#FAFBFD}
+
+/* Paso 4: reporte */
+.seg{display:inline-flex;border:1px solid var(--c-border);border-radius:8px;overflow:hidden}
+.seg button{border:none;background:#fff;padding:8px 14px;font-size:14px;color:var(--c-muted);border-right:1px solid var(--c-border)}
+.seg button:last-child{border-right:none}
+.seg button.on{background:var(--c-primary);color:#fff;font-weight:700}
+.rep-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.rep-box{border:1px solid var(--c-border);border-radius:8px;overflow:auto;max-height:440px}
+.rep-title{padding:10px 12px;background:#F6F9FD;border-bottom:1px solid var(--c-border);font-size:13.5px}
+.rep-title b{color:var(--c-ink)}
+.note{border-left:4px solid var(--c-accent);background:#EEF8FC;padding:10px 14px;border-radius:0 8px 8px 0;font-size:13.5px;margin-top:14px}
+.note b{color:var(--c-ink)}
+.note ul{margin:6px 0 0;padding-left:18px}
+.warnline{background:var(--c-warn-bg);color:var(--c-warn);border-radius:8px;padding:9px 12px;font-size:13.5px;font-weight:700;margin-bottom:12px}
+
+/* Paso 5: resumen */
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.kpi{border:1px solid var(--c-border);border-radius:10px;padding:14px 16px}
+.kpi h3{font-size:15px;margin-bottom:8px;display:flex;gap:8px;align-items:center}
+.kpi h3 .dot{width:10px;height:10px;border-radius:50%}
+.kpi .row{display:flex;justify-content:space-between;font-size:14px;padding:3px 0;border-bottom:1px dashed #EEF1F5}
+.kpi .row:last-child{border-bottom:none}
+.kpi .row b{font-variant-numeric:tabular-nums;color:var(--c-ink)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:18px}
+.panel{border:1px solid var(--c-border);border-radius:10px;padding:14px 16px;min-width:0}
+.panel h3{font-size:15px;margin-bottom:10px}
+.bars{display:grid;gap:9px}
+.bar{display:grid;grid-template-columns:120px minmax(0,1fr) 92px;gap:8px;align-items:center;font-size:13px}
+.bar .tr{background:#F0F3F7;border-radius:4px;height:22px;display:flex;overflow:hidden}
+.bar .tr span{display:block;height:100%;transition:width .8s ease}
+.bar .v{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:var(--c-ink)}
+.legend{display:flex;gap:14px;font-size:12.5px;color:var(--c-muted);margin-top:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.hist{list-style:none;margin:0;padding:0}
+.hist li{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid #EEF1F5;font-size:14px;flex-wrap:wrap}
+.hist li:last-child{border-bottom:none}
+.hist .m{font-weight:700;color:var(--c-ink);min-width:130px}
+.hist .s{color:var(--c-muted);font-size:13px;flex:1;min-width:150px}
+.pill{font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 9px}
+.pill.g{background:var(--c-ok-bg);color:var(--c-ok)}
+.pill.b{background:var(--c-soft);color:var(--c-primary)}
+.gana{margin-top:18px;background:var(--c-ink);color:#fff;border-radius:10px;padding:18px 20px}
+.gana h3{color:#fff;font-size:17px;margin-bottom:8px}
+.gana ul{margin:0;padding-left:20px;display:grid;gap:5px}
+.gana li b{color:#7FD3F0}
+
+footer{max-width:1180px;margin:0 auto;padding:0 20px 30px;font-size:12.5px;color:var(--c-muted);text-align:center}
+
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--c-ink);color:#fff;padding:10px 16px;border-radius:8px;font-size:14px;z-index:50;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.on{opacity:1}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,51,.45);display:none;align-items:center;justify-content:center;z-index:60;padding:16px}
+.modal-bg.on{display:flex}
+.modal{background:#fff;border-radius:10px;padding:20px;max-width:420px;width:100%}
+.modal h3{margin-bottom:8px}
+.modal .actions{border-top:none;padding-top:0;margin-top:16px;justify-content:flex-end}
+
+@media (max-width:820px){
+  .top{padding:10px 14px;gap:10px;flex-wrap:wrap}
+  .top img{height:38px}
+  .top .ttl{flex:1}
+  .top .ttl b{font-size:15px;line-height:1.25}
+  .top .ttl span{display:none}
+  .btn-ghost{padding:5px 9px;font-size:12.5px}
+  .due{gap:2px 14px;font-size:13px}
+  .top .sp{display:none}
+  .badge-proto{order:10;width:100%;text-align:center}
+  .due{padding:8px 14px}
+  .steps{padding:8px 14px}
+  .st .lb{display:none}
+  .st.on .lb{display:inline}
+  main{padding:16px 14px 30px}
+  .card{padding:16px}
+  .step-head h2{font-size:20px}
+  .ba{grid-template-columns:minmax(0,1fr)}
+  .merge{grid-template-columns:minmax(0,1fr)}
+  .merge .arrow{transform:rotate(90deg)}
+  .cmp,.rev,.grid2,.kpis{grid-template-columns:minmax(0,1fr)}
+  .bar{grid-template-columns:96px minmax(0,1fr) 84px}
+  .actions .btn{flex:1}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <img src="data:image/png;base64,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" alt="Ecuacentair">
+  <div class="ttl"><b>Reportes de ventas al aeropuerto</b><span>Del Excel del proveedor al reporte listo, en un clic</span></div>
+  <div class="sp"></div>
+  <span class="badge-proto">PROTOTIPO · DATOS ILUSTRATIVOS</span>
+  <button class="btn-ghost" id="btnReset" type="button">Reiniciar</button>
+</header>
+<div class="due" id="due"></div>
+<nav class="steps" id="steps" aria-label="Pasos"></nav>
+
+<main>
+  <section class="card" id="view" aria-live="polite"></section>
+</main>
+
+<footer>Prototipo elaborado por Turingtech para mostrar la idea. No es un sistema de Ecuacentair. Operadores, matrículas, servicios, valores y columnas son ilustrativos.</footer>
+
+<div class="toast" id="toast"></div>
+<div class="modal-bg" id="modal"><div class="modal"><h3 id="mT"></h3><div id="mB"></div><div class="actions"><button class="btn sec sm" id="mNo" type="button">Cancelar</button><button class="btn sm" id="mOk" type="button">Aceptar</button></div></div></div>
+
+<script>
+/* =====================================================================
+   DATA: todo lo ilustrativo vive aquí. Los valores van en centavos.
+   ===================================================================== */
+const DATA = {
+  mesActual: '2026-10',
+  entrega: 'hasta el 9 de noviembre de 2026',
+  ivaPct: 15,
+  servicios: [
+    { cod: 'DES', n: 'Despacho de vuelo', col: 'Despacho', p: 18000, color: '#0055B8' },
+    { cod: 'VIP', n: 'Sala VIP (por pasajero)', col: 'Sala VIP', p: 4250, color: '#0099CC' },
+    { cod: 'PLA', n: 'Asistencia en plataforma', col: 'Plataforma', p: 12000, color: '#5B8DD6' },
+    { cod: 'CAT', n: 'Coordinación de catering', col: 'Catering', p: 6500, color: '#7FC4DE' },
+    { cod: 'TRA', n: 'Transporte terrestre', col: 'Transporte', p: 3800, color: '#9AA9C2' },
+  ],
+  // Artículo que el proveedor empezó a facturar y que aún no tiene columna en el reporte.
+  nuevo: { cod: 'LIM', n: 'Limpieza de cabina', p: 7500 },
+  clientes: [
+    { c: 'C01', n: 'Operador A', pais: 'Estados Unidos', mat: 'DEMO-01' },
+    { c: 'C02', n: 'Operador B', pais: 'Colombia', mat: 'DEMO-02' },
+    { c: 'C03', n: 'Operador C', pais: 'Panamá', mat: 'DEMO-03' },
+    { c: 'C04', n: 'Operador D', pais: 'Perú', mat: 'DEMO-04' },
+    { c: 'C05', n: 'Operador E', pais: 'Estados Unidos', mat: 'DEMO-05' },
+    { c: 'C06', n: 'Operador F', pais: 'México', mat: 'DEMO-06' },
+  ],
+  tipos: ['Llegada', 'Salida', 'Escala técnica'],
+  sedes: {
+    UIO: { n: 'Quito', aer: 'Aeropuerto de Quito', serie: '001-001', color: '#0055B8' },
+    GYE: { n: 'Guayaquil', aer: 'Aeropuerto de Guayaquil', serie: '002-001', color: '#0099CC' },
+  },
+  meses: [
+    { k: '2026-08', n: 'Agosto 2026', dias: 31, seed: 811, uio: 13, gye: 9, nUio: 1101, nGye: 601, entregado: '07/09/2026' },
+    { k: '2026-09', n: 'Septiembre 2026', dias: 30, seed: 977, uio: 12, gye: 10, nUio: 1114, nGye: 610, entregado: '08/10/2026' },
+    { k: '2026-10', n: 'Octubre 2026', dias: 31, seed: 1303, uio: 14, gye: 10, nUio: 1126, nGye: 620 },
+  ],
+  archivo: 'Ventas_octubre_2026.xlsx',
+};
+
+/* ===================== utilidades ===================== */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function money(c) {
+  const neg = c < 0; c = Math.abs(c);
+  const ent = Math.floor(c / 100).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const dec = String(c % 100).padStart(2, '0');
+  return (neg ? '−' : '') + '$ ' + ent + ',' + dec;
+}
+const ivaDe = (base) => Math.round(base * DATA.ivaPct / 100);
+const pad = (n, w) => String(n).padStart(w, '0');
+const SV = Object.fromEntries(DATA.servicios.map((s) => [s.cod, s]));
+const CL = Object.fromEntries(DATA.clientes.map((c) => [c.c, c]));
+function rng(seed) { let x = seed; return () => { x = (x * 48271) % 2147483647; return x / 2147483647; }; }
+const pick = (r, arr) => arr[Math.floor(r() * arr.length)];
+
+/* Genera las facturas limpias de un mes (lo que el proveedor factura). */
+function genMes(m) {
+  const r = rng(m.seed), out = [];
+  [['UIO', m.uio, m.nUio], ['GYE', m.gye, m.nGye]].forEach(([sede, n, n0]) => {
+    const dias = [];
+    for (let i = 0; i < n; i++) dias.push(1 + Math.floor(r() * m.dias));
+    dias.sort((a, b) => a - b);
+    dias.forEach((d, i) => {
+      const cli = pick(r, DATA.clientes);
+      const lines = [{ cod: 'DES', q: 1 }];
+      const pax = Math.floor(r() * 7); if (pax > 0) lines.push({ cod: 'VIP', q: pax });
+      if (r() < 0.6) lines.push({ cod: 'PLA', q: 1 });
+      if (r() < 0.4) lines.push({ cod: 'CAT', q: 1 });
+      if (r() < 0.5) lines.push({ cod: 'TRA', q: 1 + Math.floor(r() * 3) });
+      lines.forEach((l) => { l.p = SV[l.cod].p; l.art = SV[l.cod].n; });
+      out.push({
+        num: DATA.sedes[sede].serie + '-' + pad(n0 + i, 9), sede,
+        fecha: pad(d, 2) + '/' + m.k.slice(5) + '/' + m.k.slice(0, 4),
+        cli: cli.c, mat: cli.mat, tipo: pick(r, DATA.tipos), lines,
+      });
+    });
+  });
+  return out;
+}
+const sumLines = (ls) => ls.reduce((s, l) => s + l.q * l.p, 0);
+
+/* Arma el archivo de octubre tal como llegaría del proveedor, con sus detalles reales:
+   una matrícula vacía, un total que no cuadra, una factura repetida, una de noviembre,
+   un artículo nuevo y una nota de crédito. */
+function archivoOctubre() {
+  const m = DATA.meses[2];
+  const fs = genMes(m);
+  const uio = fs.filter((f) => f.sede === 'UIO'), gye = fs.filter((f) => f.sede === 'GYE');
+  const fMat = uio[4];            // sin matrícula
+  const fDif = gye[2];            // total de Facturas no cuadra con Detalle
+  const fDup = uio[8];            // aparece dos veces en Facturas
+  const fNue = uio[10];           // trae un artículo nuevo
+  const fNc = gye[5];             // tiene una nota de crédito
+  if (!fDif.lines.some((l) => l.cod === 'VIP')) fDif.lines.push({ cod: 'VIP', q: 2, p: SV.VIP.p, art: SV.VIP.n });
+  fNue.lines.push({ cod: DATA.nuevo.cod, q: 1, p: DATA.nuevo.p, art: DATA.nuevo.n });
+  if (!fNc.lines.some((l) => l.cod === 'VIP')) fNc.lines.push({ cod: 'VIP', q: 3, p: SV.VIP.p, art: SV.VIP.n });
+  // Factura emitida el 1 de noviembre que llegó en el archivo de octubre
+  const cliN = DATA.clientes[1];
+  const fNov = { num: DATA.sedes.UIO.serie + '-' + pad(m.nUio + m.uio, 9), sede: 'UIO', fecha: '01/11/2026', cli: cliN.c, mat: cliN.mat, tipo: 'Llegada',
+    lines: [{ cod: 'DES', q: 1, p: SV.DES.p, art: SV.DES.n }, { cod: 'VIP', q: 2, p: SV.VIP.p, art: SV.VIP.n }] };
+  fs.push(fNov);
+
+  const facturas = [];
+  fs.forEach((f) => {
+    let sub = sumLines(f.lines);
+    if (f === fDif) sub -= SV.VIP.p; // el proveedor dejó fuera un pasajero de sala VIP en la cabecera
+    const row = { num: f.num, fecha: f.fecha, sede: f.sede, cli: f.cli, mat: f === fMat ? '' : f.mat, tipo: f.tipo, sub, iva: ivaDe(sub), tot: sub + ivaDe(sub) };
+    facturas.push(row);
+    if (f === fDup) facturas.push(Object.assign({}, row));
+  });
+  const detalle = [];
+  fs.forEach((f) => f.lines.forEach((l) => detalle.push({ num: f.num, cod: l.cod, art: l.art, q: l.q, p: l.p, v: l.q * l.p })));
+  const notas = [{ nc: '001-002-000000041', fecha: '28/10/2026', num: fNc.num, motivo: 'Pasajero no usó la sala VIP', v: SV.VIP.p }];
+  return { facturas, detalle, clientes: DATA.clientes, notas, ref: { fMat: fMat.num, fDif: fDif.num, fDup: fDup.num, fNue: fNue.num, fNc: fNc.num, fNov: fNov.num } };
+}
+
+/* Archivo limpio de un mes anterior (ya entregado) */
+function archivoLimpio(m) {
+  const fs = genMes(m);
+  return {
+    facturas: fs.map((f) => { const sub = sumLines(f.lines); return { num: f.num, fecha: f.fecha, sede: f.sede, cli: f.cli, mat: f.mat, tipo: f.tipo, sub, iva: ivaDe(sub), tot: sub + ivaDe(sub) }; }),
+    detalle: fs.flatMap((f) => f.lines.map((l) => ({ num: f.num, cod: l.cod, art: l.art, q: l.q, p: l.p, v: l.q * l.p }))),
+    clientes: DATA.clientes, notas: [], ref: {},
+  };
+}
+
+/* =====================================================================
+   PROCESO: une, revisa y arma el reporte. fx = arreglos elegidos por el usuario.
+   ===================================================================== */
+function procesar(arch, mesK, fx) {
+  fx = fx || {};
+  const auto = [], avisos = [];
+  // 1. Quitar repetidas
+  const vistas = new Set(), facts = [];
+  let dup = null;
+  arch.facturas.forEach((f) => { if (vistas.has(f.num)) { dup = f.num; return; } vistas.add(f.num); facts.push(Object.assign({}, f)); });
+  // 2. Detalle por factura
+  const det = {};
+  arch.detalle.forEach((d) => { (det[d.num] = det[d.num] || []).push(d); });
+  const ncPor = {};
+  arch.notas.forEach((n) => { ncPor[n.num] = (ncPor[n.num] || 0) + n.v; });
+
+  auto.push({ t: 'Se unieron las ' + 4 + ' pestañas del archivo en una sola tabla.' });
+  auto.push({ t: arch.detalle.length + ' filas de Detalle (una por artículo) quedaron en ' + facts.length + ' filas, una por factura.' });
+  auto.push({ t: 'Cada factura se cruzó con su operador usando la pestaña Clientes.' });
+  if (dup) auto.push({ t: 'La factura ' + dup + ' aparecía dos veces. Se contó una sola vez.' });
+  arch.notas.forEach((n) => auto.push({ t: 'Se descontó la nota de crédito ' + n.nc + ' (' + money(n.v) + ') de la factura ' + n.num + '.' }));
+
+  const mesMM = mesK.slice(5), mesYY = mesK.slice(0, 4);
+  const filas = [];
+  facts.forEach((f) => {
+    const ls = det[f.num] || [];
+    const sumaDet = ls.reduce((s, l) => s + l.v, 0);
+    const cols = {}; DATA.servicios.forEach((s) => (cols[s.cod] = 0));
+    let otros = 0, sinCol = 0;
+    ls.forEach((l) => { if (SV[l.cod]) cols[l.cod] += l.v; else if (fx.art === 'otros') otros += l.v; else sinCol += l.v; });
+    const fueraMes = !(f.fecha.slice(3, 5) === mesMM && f.fecha.slice(6) === mesYY);
+    const row = { f, cols, otros, sinCol, nc: ncPor[f.num] || 0, sumaDet, fueraMes, flags: {} };
+    // avisos
+    if (!f.mat) {
+      const ok = fx.mat && fx.mat.trim();
+      avisos.push({ id: 'mat', num: f.num, ok: !!ok, sug: CL[f.cli].mat, cli: CL[f.cli].n, val: ok ? fx.mat.trim().toUpperCase() : '' });
+      if (ok) f.mat = fx.mat.trim().toUpperCase(); else row.flags.mat = true;
+    }
+    if (f.sub !== sumaDet) {
+      avisos.push({ id: 'dif', num: f.num, ok: fx.dif === 'detalle', pend: fx.dif === 'consultar', fact: f.sub, det: sumaDet });
+      if (fx.dif === 'detalle') { f.sub = sumaDet; f.iva = ivaDe(sumaDet); f.tot = f.sub + f.iva; } else row.flags.dif = true;
+    }
+    if (fueraMes) {
+      avisos.push({ id: 'fecha', num: f.num, fecha: f.fecha, ok: fx.fecha === 'nov' || fx.fecha === 'incluir', eleccion: fx.fecha });
+      if (fx.fecha === 'nov') return; // queda para el mes siguiente
+      if (fx.fecha !== 'incluir') row.flags.fecha = true;
+    }
+    if (ls.some((l) => !SV[l.cod])) {
+      const l = ls.find((x) => !SV[x.cod]);
+      avisos.push({ id: 'art', num: f.num, art: l.art, cod: l.cod, v: l.v, ok: fx.art === 'otros' });
+      if (fx.art !== 'otros') row.flags.art = true;
+    }
+    row.base = DATA.servicios.reduce((s, sv) => s + cols[sv.cod], 0) + otros - row.nc;
+    row.iva = ivaDe(row.base);
+    row.total = row.base + row.iva;
+    filas.push(row);
+  });
+  const diferidas = facts.filter((f) => fx.fecha === 'nov' && !(f.fecha.slice(3, 5) === mesMM && f.fecha.slice(6) === mesYY));
+  filas.sort((a, b) => (a.f.sede < b.f.sede ? 1 : a.f.sede > b.f.sede ? -1 : 0) || a.f.fecha.split('/').reverse().join('').localeCompare(b.f.fecha.split('/').reverse().join('')) || a.f.num.localeCompare(b.f.num));
+  // Cuadre por sede: lo que dicen las cabeceras de Facturas (menos notas de crédito) frente a lo que suma el reporte
+  const cuadre = {};
+  Object.keys(DATA.sedes).forEach((s) => {
+    const fs = filas.filter((r) => r.f.sede === s);
+    const A = fs.reduce((t, r) => t + r.f.sub - r.nc, 0);
+    const B = fs.reduce((t, r) => t + r.base, 0);
+    cuadre[s] = { A, B, d: A - B, n: fs.length };
+  });
+  return { auto, avisos, filas, cuadre, diferidas, usaOtros: fx.art === 'otros' };
+}
+
+/* ===================== estado ===================== */
+const KEY = 'ecuacentair_reportes_v1';
+const S0 = () => ({ step: 1, cargado: false, unido: false, fx: {}, sede: 'UIO', tab: 'Facturas', guardado: false });
+let S = S0();
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(S0(), JSON.parse(raw)); } catch (e) {}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+const ARCH = archivoOctubre();
+const PREV = DATA.meses.slice(0, 2).map((m) => ({ m, arch: archivoLimpio(m) }));
+const P = () => procesar(ARCH, DATA.mesActual, S.fx);
+
+/* ===================== interfaz común ===================== */
+const PASOS = [
+  { n: 'Cargar', titulo: 'Suba el Excel tal como llega del proveedor', sub: 'El mismo archivo de ventas que hoy le envía su proveedor contable, con todas sus pestañas. No hay que cambiar nada en él.',
+    antes: 'Recibir el Excel y abrir pestaña por pestaña para ver qué hay.', ahora: 'Se sube el archivo tal como llega. El sistema reconoce sus pestañas.' },
+  { n: 'Unir', titulo: 'Las pestañas se unen solas', sub: 'El detalle llega en vertical, una fila por artículo. El reporte necesita una fila por factura, con una columna por servicio.',
+    antes: 'Copiar y pegar cada artículo a mano en otra hoja.', ahora: 'Un clic: las pestañas quedan en una sola tabla, una fila por factura.' },
+  { n: 'Revisar', titulo: 'Revisión automática antes de entregar', sub: 'El sistema hace solo lo que es mecánico y le avisa únicamente lo que necesita su visto.',
+    antes: 'Revisar a ojo y descubrir el error cuando el reporte ya se envió.', ahora: 'Avisa qué falta y qué no cuadra, antes de entregar.' },
+  { n: 'Reporte', titulo: 'El reporte para el aeropuerto, listo', sub: 'Con las columnas que pide el aeropuerto. Se descarga en Excel, listo para enviar.',
+    antes: 'Armar el formato del aeropuerto desde cero cada mes.', ahora: 'Sale en un clic, siempre con las mismas columnas.' },
+  { n: 'Resumen', titulo: 'Resumen del mes e historial', sub: 'Cómo le fue a cada sede y todos los meses guardados en un solo lugar.',
+    antes: 'Buscar el archivo del mes pasado entre correos y carpetas.', ahora: 'Cada mes queda guardado y se consulta cuando quiera.' },
+];
+function puede(n) {
+  if (n === 1) return true;
+  if (n === 2) return S.cargado;
+  return S.cargado && S.unido;
+}
+function renderSteps() {
+  $('#steps').innerHTML = PASOS.map((p, i) => {
+    const n = i + 1, cls = n === S.step ? 'on' : (n < S.step && puede(n) ? 'done' : '');
+    return '<button class="st ' + cls + '" data-go="' + n + '" type="button" ' + (puede(n) ? '' : 'disabled') + '><span class="n">' + (cls === 'done' ? '✓' : n) + '</span><span class="lb">' + p.n + '</span></button>';
+  }).join('');
+  $('#due').innerHTML = '<span>Reporte de ventas: <b>' + DATA.meses[2].n + '</b></span><span>Entrega al aeropuerto: <b>' + DATA.entrega + '</b></span>';
+}
+function head(n) {
+  const p = PASOS[n - 1];
+  return '<div class="step-head"><span class="k">Paso ' + n + ' de 5</span><h2>' + p.titulo + '</h2><p>' + p.sub + '</p></div>' +
+    '<div class="ba"><div class="antes"><b>Antes</b>' + p.antes + '</div><div class="ahora"><b>Ahora</b>' + p.ahora + '</div></div>';
+}
+function acciones(prev, nextLabel, nextAct, extra) {
+  return '<div class="actions">' + (prev ? '<button class="btn sec" data-go="' + prev + '" type="button">← Atrás</button>' : '') + (extra || '') + '<span class="sp"></span>' +
+    (nextLabel ? '<button class="btn" data-act="' + nextAct + '" type="button">' + nextLabel + '</button>' : '') + '</div>';
+}
+function render(anchor) {
+  if (!puede(S.step)) S.step = 1;
+  renderSteps();
+  const v = $('#view');
+  v.innerHTML = [null, v1, v2, v3, v4, v5][S.step]();
+  save();
+  if (anchor) { const el = document.getElementById(anchor); if (el) el.scrollIntoView({ block: 'nearest' }); }
+}
+let tT;
+function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(tT); tT = setTimeout(() => el.classList.remove('on'), 2600); }
+function confirmar(t, b, ok) {
+  $('#mT').textContent = t; $('#mB').innerHTML = b; $('#modal').classList.add('on');
+  $('#mOk').onclick = () => { $('#modal').classList.remove('on'); ok(); };
+  $('#mNo').onclick = () => $('#modal').classList.remove('on');
+}
+
+/* ===================== Paso 1 ===================== */
+const HOJAS = {
+  Facturas: { cols: ['N.º factura', 'Fecha', 'Sede', 'Cód. cliente', 'Matrícula', 'Tipo de operación', 'Subtotal', 'IVA', 'Total'], num: [6, 7, 8],
+    rows: () => ARCH.facturas.map((f) => [f.num, f.fecha, f.sede, f.cli, f.mat, f.tipo, money(f.sub), money(f.iva), money(f.tot)]) },
+  Detalle: { cols: ['N.º factura', 'Cód. artículo', 'Artículo', 'Cantidad', 'Precio unit.', 'Valor'], num: [3, 4, 5],
+    rows: () => ARCH.detalle.map((d) => [d.num, d.cod, d.art, d.q, money(d.p), money(d.v)]) },
+  Clientes: { cols: ['Cód. cliente', 'Operador', 'País'], num: [],
+    rows: () => ARCH.clientes.map((c) => [c.c, c.n, c.pais]) },
+  'Notas de crédito': { cols: ['N.º nota', 'Fecha', 'Factura que afecta', 'Motivo', 'Valor'], num: [4],
+    rows: () => ARCH.notas.map((n) => [n.nc, n.fecha, n.num, n.motivo, money(n.v)]) },
+};
+function tablaHoja(nombre, max) {
+  const h = HOJAS[nombre], rows = h.rows();
+  const vis = rows.slice(0, max);
+  return '<table class="t xl"><thead><tr><th class="n">#</th>' + h.cols.map((c, i) => '<th' + (h.num.includes(i) ? ' class="n"' : '') + '>' + c + '</th>').join('') + '</tr></thead><tbody>' +
+    vis.map((r, k) => '<tr><td class="n" style="color:#8A8F9C">' + (k + 2) + '</td>' + r.map((c, i) => '<td' + (h.num.includes(i) ? ' class="n"' : '') + '>' + esc(c) + '</td>').join('') + '</tr>').join('') +
+    (rows.length > max ? '<tr class="more"><td colspan="' + (h.cols.length + 1) + '">… y ' + (rows.length - max) + ' filas más</td></tr>' : '') + '</tbody></table>';
+}
+function v1() {
+  let h = head(1);
+  h += '<div class="drop"><div class="xls-ic">XLS</div><div class="info"><b>' + DATA.archivo + '</b><div>Archivo de ejemplo con la forma del que envía su proveedor contable: 4 pestañas, facturación en vertical por artículo.</div></div>' +
+    (S.cargado ? '<span class="pill g">Cargado</span>' : '<button class="btn" data-act="cargar" type="button">Cargar archivo de ejemplo</button>') + '</div>';
+  if (S.cargado) {
+    h += '<div class="sheet fade-in" id="hoja"><div class="sheet-body">' + tablaHoja(S.tab, 12) + '</div><div class="tabs-x">' +
+      Object.keys(HOJAS).map((k) => '<button class="' + (k === S.tab ? 'on' : '') + '" data-tab="' + k + '" type="button">' + k + ' <small>(' + HOJAS[k].rows().length + ')</small></button>').join('') + '</div></div>' +
+      '<p class="hint">Así llega hoy: la información repartida en pestañas. Toque cada pestaña para verla. <button class="link" data-act="bajarOrigen" type="button">Descargar este archivo de ejemplo</button></p>';
+  }
+  return h + acciones(0, S.cargado ? 'Siguiente: unir las pestañas →' : '', 'ir2');
+}
+
+/* ===================== Paso 2 ===================== */
+function v2() {
+  let h = head(2);
+  const p = P();
+  h += '<div class="merge ' + (S.unido ? 'merged' : '') + '" id="merge"><div class="chips">' +
+    Object.keys(HOJAS).map((k) => '<div class="chip">' + k + '<small>' + HOJAS[k].rows().length + ' filas</small></div>').join('') +
+    '</div><div class="arrow">➜</div><div class="one ' + (S.unido ? 'on' : '') + '"><b>Una sola tabla</b><span class="hint">' + (S.unido ? p.filas.length + ' facturas, una fila cada una' : 'pendiente') + '</span></div></div>';
+  if (!S.unido) {
+    h += '<div style="text-align:center;margin:8px 0 4px"><button class="btn" data-act="unir" type="button">Unir las pestañas</button></div>';
+    return h + acciones(1, '', '');
+  }
+  // Ejemplo: la factura con más artículos
+  const nLin = (n) => ARCH.detalle.filter((d) => d.num === n).length;
+  const limpias = ARCH.facturas.filter((f) => f.mat && !Object.values(ARCH.ref).includes(f.num));
+  const fNum = limpias.slice().sort((a, b) => nLin(b.num) - nLin(a.num))[0].num;
+  const ls = ARCH.detalle.filter((d) => d.num === fNum);
+  const fila = p.filas.find((r) => r.f.num === fNum);
+  h += '<div class="cmp fade-in" id="cmp"><div><h3>Así llega (pestaña Detalle)</h3><div class="box"><table class="t"><thead><tr><th>Factura</th><th>Artículo</th><th class="n">Valor</th></tr></thead><tbody>' +
+    ls.map((l) => '<tr class="hl"><td>…' + l.num.slice(-4) + '</td><td>' + esc(l.art) + '</td><td class="n">' + money(l.v) + '</td></tr>').join('') +
+    '</tbody></table></div><div class="cap">' + ls.length + ' filas para una misma factura.</div></div>' +
+    '<div><h3>Así queda (una fila por factura)</h3><div class="box"><table class="t"><thead><tr><th>Factura</th><th>Operador</th>' +
+    DATA.servicios.map((s) => '<th class="n">' + s.col + '</th>').join('') + '</tr></thead><tbody><tr class="hl"><td>…' + fNum.slice(-4) + '</td><td>' + CL[fila.f.cli].n + '</td>' +
+    DATA.servicios.map((s) => '<td class="n">' + (fila.cols[s.cod] ? money(fila.cols[s.cod]) : '—') + '</td>').join('') + '</tr></tbody></table></div>' +
+    '<div class="cap">Los mismos datos, una sola fila, cada servicio en su columna.</div></div></div>';
+  h += '<h3 style="font-size:15px;margin-bottom:8px">La tabla unida</h3><div class="rep-box" style="max-height:320px">' + tablaUnida(p) + '</div>';
+  return h + acciones(1, 'Siguiente: revisar →', 'ir3');
+}
+function tablaUnida(p) {
+  return '<table class="t"><thead><tr><th>Sede</th><th>Fecha</th><th>N.º factura</th><th>Operador</th><th>Matrícula</th>' + DATA.servicios.map((s) => '<th class="n">' + s.col + '</th>').join('') + '</tr></thead><tbody>' +
+    p.filas.map((r) => '<tr><td>' + DATA.sedes[r.f.sede].n + '</td><td' + (r.flags.fecha ? ' class="flag"' : '') + '>' + r.f.fecha + '</td><td>' + r.f.num + '</td><td>' + CL[r.f.cli].n + '</td><td' + (r.flags.mat ? ' class="flag"' : '') + '>' + (r.f.mat || '¿?') + '</td>' +
+      DATA.servicios.map((s) => '<td class="n">' + (r.cols[s.cod] ? money(r.cols[s.cod]) : '—') + '</td>').join('') + '</tr>').join('') + '</tbody></table>';
+}
+
+/* ===================== Paso 3 ===================== */
+function v3() {
+  let h = head(3);
+  const p = P();
+  const pend = p.avisos.filter((a) => !a.ok).length;
+  h += '<div class="rev"><div><h3>Lo que hizo solo <span class="cnt ok">' + p.auto.length + '</span></h3><ul class="auto">' +
+    p.auto.map((a) => '<li><i>✓</i><span>' + esc(a.t) + '</span></li>').join('') + '</ul></div>' +
+    '<div id="avisos"><h3>Necesita su visto <span class="cnt ' + (pend ? 'wa' : 'ok') + '">' + (pend ? pend + ' pendiente' + (pend > 1 ? 's' : '') : 'todo revisado') + '</span></h3>' +
+    p.avisos.map(aviso).join('') + '</div></div>';
+  h += '<div class="cuadre" id="cuadre"><table class="t"><thead><tr><th>Cuadre por sede</th><th class="n">Facturas</th><th class="n">Según las pestañas</th><th class="n">Según el reporte</th><th class="n">Diferencia</th></tr></thead><tbody>' +
+    Object.keys(DATA.sedes).map((s) => { const c = p.cuadre[s]; return '<tr><td><b>' + DATA.sedes[s].n + '</b></td><td class="n">' + c.n + '</td><td class="n">' + money(c.A) + '</td><td class="n">' + money(c.B) + '</td><td class="n ' + (c.d === 0 ? 'dz' : 'dn') + '">' + (c.d === 0 ? '✓ Cuadra' : money(c.d)) + '</td></tr>'; }).join('') +
+    '</tbody></table><div class="cuadre-cap">Valores sin IVA, ya descontada la nota de crédito. «Según las pestañas» suma las cabeceras de Facturas; «según el reporte» suma el detalle por servicio. Si no son iguales, algo no cuadra entre pestañas.</div></div>';
+  return h + acciones(2, 'Siguiente: ver el reporte →', 'ir4');
+}
+function aviso(a) {
+  const ok = a.ok ? ' ok' : '';
+  if (a.id === 'mat') {
+    return '<div class="aviso' + ok + '"><div class="h"><i>' + (a.ok ? '✓' : '!') + '</i><span>Falta la matrícula en la factura ' + a.num + '</span></div>' +
+      (a.ok ? '<div class="res">Matrícula registrada: ' + esc(a.val) + '</div>' :
+        '<p>El aeropuerto pide la matrícula en cada operación. El último vuelo de ' + a.cli + ' fue con la aeronave ' + a.sug + '.</p><div class="do"><input id="inMat" value="" placeholder="Matrícula" aria-label="Matrícula"><button class="btn sm" data-act="mat" type="button">Guardar</button><button class="btn sec sm" data-act="matSug" data-v="' + a.sug + '" type="button">Usar ' + a.sug + '</button></div>') + '</div>';
+  }
+  if (a.id === 'dif') {
+    return '<div class="aviso' + ok + '"><div class="h"><i>' + (a.ok ? '✓' : '!') + '</i><span>El total de la factura ' + a.num + ' no cuadra entre pestañas</span></div>' +
+      (a.ok ? '<div class="res">Se usó la suma del detalle: ' + money(a.det) + '</div>' :
+        '<p>En Facturas dice ' + money(a.fact) + ' sin IVA, pero sus artículos en Detalle suman ' + money(a.det) + '. Diferencia: ' + money(a.det - a.fact) + '.' + (a.pend ? ' <b>Marcada para consultar al proveedor.</b>' : '') + '</p><div class="do"><button class="btn sm" data-act="difDet" type="button">Usar la suma del detalle</button>' + (a.pend ? '' : '<button class="btn sec sm" data-act="difCon" type="button">Consultar al proveedor</button>') + '</div>') + '</div>';
+  }
+  if (a.id === 'fecha') {
+    return '<div class="aviso' + ok + '"><div class="h"><i>' + (a.ok ? '✓' : '!') + '</i><span>La factura ' + a.num + ' es del ' + a.fecha + '</span></div>' +
+      (a.ok ? '<div class="res">' + (a.eleccion === 'nov' ? 'Queda para el reporte de noviembre.' : 'Se incluye en octubre.') + '</div>' :
+        '<p>Llegó en el archivo de octubre, pero su fecha es de noviembre.</p><div class="do"><button class="btn sm" data-act="fechaNov" type="button">Dejarla para noviembre</button><button class="btn sec sm" data-act="fechaInc" type="button">Incluir en octubre</button></div>') + '</div>';
+  }
+  if (a.id === 'art') {
+    return '<div class="aviso' + ok + '"><div class="h"><i>' + (a.ok ? '✓' : '!') + '</i><span>Artículo nuevo: «' + esc(a.art) + '»</span></div>' +
+      (a.ok ? '<div class="res">Se suma en la columna «Otros servicios». La próxima vez se hará solo.</div>' :
+        '<p>Aparece en la factura ' + a.num + ' (' + money(a.v) + ') y todavía no tiene columna en el reporte. Mientras no se asigne, ese valor no entra y el cuadre lo muestra.</p><div class="do"><button class="btn sm" data-act="artOtros" type="button">Sumarlo en «Otros servicios»</button></div>') + '</div>';
+  }
+  return '';
+}
+
+/* ===================== Paso 4 ===================== */
+function columnasReporte(usaOtros, conSede) {
+  return (conSede ? ['Sede'] : []).concat(['Fecha', 'N.º factura', 'Operador', 'Matrícula', 'Tipo de operación'], DATA.servicios.map((s) => s.col), usaOtros ? ['Otros servicios'] : [], ['Nota de crédito', 'Base imponible', 'IVA ' + DATA.ivaPct + ' %', 'Total']);
+}
+function filasDe(p, sede) { return sede === 'AMB' ? p.filas : p.filas.filter((r) => r.f.sede === sede); }
+function totalesDe(rs) {
+  const t = { cols: {}, otros: 0, nc: 0, base: 0, iva: 0, total: 0 };
+  DATA.servicios.forEach((s) => (t.cols[s.cod] = rs.reduce((a, r) => a + r.cols[s.cod], 0)));
+  ['otros', 'nc', 'base', 'iva', 'total'].forEach((k) => (t[k] = rs.reduce((a, r) => a + r[k], 0)));
+  return t;
+}
+function v4() {
+  let h = head(4);
+  const p = P();
+  const pend = p.avisos.filter((a) => !a.ok).length;
+  if (pend) h += '<div class="warnline">Quedan ' + pend + ' aviso' + (pend > 1 ? 's' : '') + ' sin revisar. Se marcan en amarillo en el reporte. <button class="link" data-go="3" type="button">Volver a revisar</button></div>';
+  h += '<div class="rep-bar"><div class="seg" role="tablist">' + [['UIO', 'Quito'], ['GYE', 'Guayaquil'], ['AMB', 'Ambas sedes']].map(([k, n]) => '<button class="' + (S.sede === k ? 'on' : '') + '" data-sede="' + k + '" type="button">' + n + '</button>').join('') +
+    '</div><span class="sp" style="flex:1"></span><button class="btn" data-act="bajarRep" type="button">⬇ Descargar Excel</button></div>';
+  const rs = filasDe(p, S.sede), conSede = S.sede === 'AMB';
+  const cols = columnasReporte(p.usaOtros, conSede);
+  const nTxt = conSede ? 6 : 5;
+  const t = totalesDe(rs);
+  h += '<div class="rep-box" id="rep"><div class="rep-title"><b>Reporte de ventas · ' + (conSede ? 'Quito y Guayaquil' : DATA.sedes[S.sede].aer) + ' · ' + DATA.meses[2].n + '</b> · ' + rs.length + ' facturas · columnas de ejemplo</div>' +
+    '<table class="t"><thead><tr>' + cols.map((c, i) => '<th' + (i >= nTxt ? ' class="n"' : '') + '>' + c + '</th>').join('') + '</tr></thead><tbody>' +
+    rs.map((r) => '<tr>' + (conSede ? '<td>' + DATA.sedes[r.f.sede].n + '</td>' : '') + '<td' + (r.flags.fecha ? ' class="flag"' : '') + '>' + r.f.fecha + '</td><td>' + r.f.num + '</td><td>' + CL[r.f.cli].n + '</td><td' + (r.flags.mat ? ' class="flag"' : '') + '>' + (r.f.mat || 'falta') + '</td><td>' + r.f.tipo + '</td>' +
+      DATA.servicios.map((s) => '<td class="n">' + (r.cols[s.cod] ? money(r.cols[s.cod]) : '—') + '</td>').join('') + (p.usaOtros ? '<td class="n">' + (r.otros ? money(r.otros) : '—') + '</td>' : '') +
+      '<td class="n">' + (r.nc ? money(-r.nc) : '—') + '</td><td class="n' + (r.flags.dif || r.flags.art ? ' flag' : '') + '">' + money(r.base) + '</td><td class="n">' + money(r.iva) + '</td><td class="n">' + money(r.total) + '</td></tr>').join('') +
+    '<tr class="tot"><td colspan="' + nTxt + '">Total</td>' + DATA.servicios.map((s) => '<td class="n">' + money(t.cols[s.cod]) + '</td>').join('') + (p.usaOtros ? '<td class="n">' + money(t.otros) + '</td>' : '') +
+    '<td class="n">' + money(-t.nc) + '</td><td class="n">' + money(t.base) + '</td><td class="n">' + money(t.iva) + '</td><td class="n">' + money(t.total) + '</td></tr></tbody></table></div>';
+  h += '<div class="note"><b>Para confirmar con ustedes</b><ul><li>Las columnas exactas que pide el aeropuerto: aquí son de ejemplo y se ajustan a su formato.</li><li>Si se entrega un reporte por aeropuerto (Quito y Guayaquil) o uno solo con ambas sedes.</li><li>Si el aeropuerto pide los valores con o sin IVA.</li></ul></div>';
+  return h + acciones(3, 'Siguiente: resumen e historial →', 'ir5');
+}
+
+/* ===================== Paso 5 ===================== */
+function v5() {
+  let h = head(5);
+  const p = P();
+  h += '<div class="kpis">' + Object.keys(DATA.sedes).map((s) => {
+    const rs = p.filas.filter((r) => r.f.sede === s), t = totalesDe(rs);
+    const pax = ARCH.detalle.filter((d) => d.cod === 'VIP' && rs.some((r) => r.f.num === d.num)).reduce((a, d) => a + d.q, 0);
+    return '<div class="kpi"><h3><span class="dot" style="background:' + DATA.sedes[s].color + '"></span>' + DATA.sedes[s].n + ' · ' + DATA.meses[2].n + '</h3>' +
+      '<div class="row"><span>Facturas (operaciones atendidas)</span><b>' + rs.length + '</b></div>' +
+      '<div class="row"><span>Pasajeros en sala VIP</span><b>' + pax + '</b></div>' +
+      '<div class="row"><span>Ventas sin IVA</span><b>' + money(t.base) + '</b></div>' +
+      '<div class="row"><span>Promedio por factura</span><b>' + money(rs.length ? Math.round(t.base / rs.length) : 0) + '</b></div></div>';
+  }).join('') + '</div>';
+  // Barras por servicio
+  const tU = totalesDe(p.filas.filter((r) => r.f.sede === 'UIO')), tG = totalesDe(p.filas.filter((r) => r.f.sede === 'GYE'));
+  const maxS = Math.max(...DATA.servicios.map((s) => tU.cols[s.cod] + tG.cols[s.cod]));
+  h += '<div class="grid2"><div class="panel"><h3>Ventas por servicio (sin IVA)</h3><div class="bars">' + DATA.servicios.map((s) => {
+    const u = tU.cols[s.cod], g = tG.cols[s.cod];
+    return '<div class="bar"><span>' + s.col + '</span><div class="tr"><span style="width:' + (u / maxS * 100).toFixed(1) + '%;background:' + DATA.sedes.UIO.color + '"></span><span style="width:' + (g / maxS * 100).toFixed(1) + '%;background:' + DATA.sedes.GYE.color + '"></span></div><span class="v">' + money(u + g) + '</span></div>';
+  }).join('') + '</div><div class="legend"><span><i style="background:' + DATA.sedes.UIO.color + '"></i>Quito</span><span><i style="background:' + DATA.sedes.GYE.color + '"></i>Guayaquil</span></div></div>';
+  // Tendencia de 3 meses
+  const meses = PREV.map((x) => ({ n: x.m.n, p: procesar(x.arch, x.m.k, {}) })).concat([{ n: DATA.meses[2].n, p }]);
+  const tot = meses.map((m) => ({ n: m.n, u: totalesDe(m.p.filas.filter((r) => r.f.sede === 'UIO')).base, g: totalesDe(m.p.filas.filter((r) => r.f.sede === 'GYE')).base }));
+  const maxM = Math.max(...tot.map((t) => t.u + t.g));
+  h += '<div class="panel"><h3>Ventas de los últimos 3 meses</h3><div class="bars">' + tot.map((t) => '<div class="bar"><span>' + t.n.split(' ')[0] + '</span><div class="tr"><span style="width:' + (t.u / maxM * 100).toFixed(1) + '%;background:' + DATA.sedes.UIO.color + '"></span><span style="width:' + (t.g / maxM * 100).toFixed(1) + '%;background:' + DATA.sedes.GYE.color + '"></span></div><span class="v">' + money(t.u + t.g) + '</span></div>').join('') +
+    '</div><div class="legend"><span><i style="background:' + DATA.sedes.UIO.color + '"></i>Quito</span><span><i style="background:' + DATA.sedes.GYE.color + '"></i>Guayaquil</span></div></div></div>';
+  // Historial
+  h += '<div class="panel" style="margin-top:18px" id="hist"><h3>Historial de reportes</h3><ul class="hist">' +
+    (p.diferidas.length ? '<li><span class="m">Noviembre 2026</span><span class="s">En curso: ' + p.diferidas.length + ' factura hasta hoy. Puede ver el avance cuando quiera, no solo el día 9.</span><span class="pill b">En curso</span><button class="btn sec sm" data-act="bajarMes" data-m="nov" type="button">Ver avance</button></li>' : '') +
+    '<li><span class="m">' + DATA.meses[2].n + '</span><span class="s">Generado hoy · listo para entregar ' + DATA.entrega + '</span><span class="pill g">Listo</span><button class="btn sec sm" data-act="bajarMes" data-m="2" type="button">Descargar</button></li>' +
+    PREV.slice().reverse().map((x, i) => '<li><span class="m">' + x.m.n + '</span><span class="s">Entregado el ' + x.m.entregado + '</span><span class="pill g">Entregado</span><button class="btn sec sm" data-act="bajarMes" data-m="' + (1 - i) + '" type="button">Descargar</button></li>').join('') +
+    '</ul><p class="hint" style="margin:8px 0 0">Los reportes quedan guardados en el sistema: se vuelven a descargar sin buscar ni subir el archivo otra vez.</p></div>';
+  h += '<div class="gana"><h3>Lo que gana Ecuacentair</h3><ul>' +
+    '<li><b>Sin copiar y pegar:</b> el reporte sale del mismo Excel que ya envía su proveedor.</li>' +
+    '<li><b>Errores a tiempo:</b> lo que falta o no cuadra se ve antes de entregar, no después.</li>' +
+    '<li><b>Cuando quiera:</b> puede sacar el reporte a mitad de mes, no solo el día 9.</li>' +
+    '<li><b>Todo guardado:</b> cada mes queda en el historial, por sede.</li>' +
+    '<li><b>Nada cambia afuera:</b> su proveedor contable y el aeropuerto siguen igual.</li></ul></div>';
+  return h + acciones(4, 'Volver a empezar', 'reiniciar');
+}
+
+/* =====================================================================
+   EXCEL: .xlsx real sin librerías (SpreadsheetML en un zip sin compresión).
+   ===================================================================== */
+const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_T[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipStore(files) {
+  const enc = new TextEncoder(), parts = [], cen = [];
+  let off = 0;
+  files.forEach((f) => {
+    const name = enc.encode(f.name), data = enc.encode(f.data), crc = crc32(data);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+    lh.setUint16(10, 0, true); lh.setUint16(12, 0x5D53, true); lh.setUint32(14, crc, true); lh.setUint32(18, data.length, true);
+    lh.setUint32(22, data.length, true); lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
+    parts.push(new Uint8Array(lh.buffer), name, data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
+    ch.setUint16(12, 0, true); ch.setUint16(14, 0x5D53, true); ch.setUint32(16, crc, true); ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true);
+    ch.setUint16(28, name.length, true); ch.setUint16(30, 0, true); ch.setUint16(32, 0, true); ch.setUint16(34, 0, true); ch.setUint16(36, 0, true);
+    ch.setUint32(38, 0, true); ch.setUint32(42, off, true);
+    cen.push(new Uint8Array(ch.buffer), name);
+    off += 30 + name.length + data.length;
+  });
+  const cs = cen.reduce((s, p) => s + p.length, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+  end.setUint32(12, cs, true); end.setUint32(16, off, true);
+  const all = parts.concat(cen, [new Uint8Array(end.buffer)]);
+  const out = new Uint8Array(all.reduce((s, p) => s + p.length, 0));
+  let q = 0; all.forEach((a) => { out.set(a, q); q += a.length; });
+  return out;
+}
+const xesc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const colL = (i) => { let s = ''; i++; while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
+// Estilos: 0 normal, 1 encabezado, 2 dinero, 3 título, 4 total texto, 5 total dinero, 6 nota, 7 marcado, 8 dinero marcado
+const XST = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+  '<numFmts count="1"><numFmt numFmtId="164" formatCode="#,##0.00"/></numFmts>' +
+  '<fonts count="5"><font><sz val="10"/><name val="Calibri"/></font><font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="13"/><color rgb="FF000033"/><name val="Calibri"/></font><font><b/><sz val="10"/><name val="Calibri"/></font><font><i/><sz val="9"/><color rgb="FF5B6474"/><name val="Calibri"/></font></fonts>' +
+  '<fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0055B8"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE8F1FB"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF4E0"/></patternFill></fill></fills>' +
+  '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
+  '<cellXfs count="9"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" applyFont="1" applyFill="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" applyNumberFormat="1"/>' +
+  '<xf numFmtId="0" fontId="2" fillId="0" borderId="0" applyFont="1"/><xf numFmtId="0" fontId="3" fillId="3" borderId="0" applyFont="1" applyFill="1"/><xf numFmtId="164" fontId="3" fillId="3" borderId="0" applyNumberFormat="1" applyFont="1" applyFill="1"/>' +
+  '<xf numFmtId="0" fontId="4" fillId="0" borderId="0" applyFont="1"/><xf numFmtId="0" fontId="0" fillId="4" borderId="0" applyFill="1"/><xf numFmtId="164" fontId="0" fillId="4" borderId="0" applyNumberFormat="1" applyFill="1"/></cellXfs></styleSheet>';
+/* hoja = { name, widths:[...], rows:[[celda...]] }, celda = texto | número | {v, s} */
+function sheetXML(sh) {
+  const rows = sh.rows.map((r, ri) => '<row r="' + (ri + 1) + '">' + r.map((c, ci) => {
+    if (c === null || c === undefined || c === '') return '';
+    const o = typeof c === 'object' ? c : { v: c };
+    const ref = colL(ci) + (ri + 1), s = o.s ? ' s="' + o.s + '"' : '';
+    if (typeof o.v === 'number') return '<c r="' + ref + '"' + s + '><v>' + o.v + '</v></c>';
+    return '<c r="' + ref + '"' + s + ' t="inlineStr"><is><t xml:space="preserve">' + xesc(o.v) + '</t></is></c>';
+  }).join('') + '</row>').join('');
+  const cols = sh.widths ? '<cols>' + sh.widths.map((w, i) => '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>').join('') + '</cols>' : '';
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' + cols + '<sheetData>' + rows + '</sheetData></worksheet>';
+}
+function libro(hojas) {
+  const files = [];
+  files.push({ name: '[Content_Types].xml', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
+    hojas.map((s, i) => '<Override PartName="/xl/worksheets/sheet' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join('') + '</Types>' });
+  files.push({ name: '_rels/.rels', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>' });
+  files.push({ name: 'xl/workbook.xml', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>' +
+    hojas.map((s, i) => '<sheet name="' + xesc(s.name) + '" sheetId="' + (i + 1) + '" r:id="rId' + (i + 1) + '"/>').join('') + '</sheets></workbook>' });
+  files.push({ name: 'xl/_rels/workbook.xml.rels', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    hojas.map((s, i) => '<Relationship Id="rId' + (i + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' + (i + 1) + '.xml"/>').join('') +
+    '<Relationship Id="rId' + (hojas.length + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>' });
+  files.push({ name: 'xl/styles.xml', data: XST });
+  hojas.forEach((s, i) => files.push({ name: 'xl/worksheets/sheet' + (i + 1) + '.xml', data: sheetXML(s) }));
+  return zipStore(files);
+}
+const usd = (c) => Math.round(c) / 100;
+function hojaReporte(p, sede, mesN) {
+  const conSede = sede === 'AMB';
+  const rs = filasDe(p, sede), cols = columnasReporte(p.usaOtros, conSede), nTxt = conSede ? 6 : 5, t = totalesDe(rs);
+  const rows = [];
+  rows.push([{ v: 'REPORTE DE VENTAS · ' + (conSede ? 'QUITO Y GUAYAQUIL' : DATA.sedes[sede].aer.toUpperCase()) + ' · ' + mesN.toUpperCase(), s: 3 }]);
+  rows.push([{ v: 'Ecuacentair Cia Ltda · Prototipo con datos ilustrativos · columnas de ejemplo, se ajustan al formato del aeropuerto', s: 6 }]);
+  rows.push([]);
+  rows.push(cols.map((c) => ({ v: c, s: 1 })));
+  rs.forEach((r) => {
+    const m = (f) => (f ? 7 : 0), mm = (f) => (f ? 8 : 2);
+    rows.push((conSede ? [DATA.sedes[r.f.sede].n] : []).concat([{ v: r.f.fecha, s: m(r.flags.fecha) }, r.f.num, CL[r.f.cli].n, { v: r.f.mat || 'FALTA', s: m(r.flags.mat) }, r.f.tipo],
+      DATA.servicios.map((s) => ({ v: usd(r.cols[s.cod]), s: 2 })), p.usaOtros ? [{ v: usd(r.otros), s: 2 }] : [],
+      [{ v: usd(-r.nc), s: 2 }, { v: usd(r.base), s: mm(r.flags.dif || r.flags.art) }, { v: usd(r.iva), s: 2 }, { v: usd(r.total), s: 2 }]));
+  });
+  const tr = [{ v: 'TOTAL', s: 4 }]; for (let i = 1; i < nTxt; i++) tr.push({ v: ' ', s: 4 });
+  rows.push(tr.concat(DATA.servicios.map((s) => ({ v: usd(t.cols[s.cod]), s: 5 })), p.usaOtros ? [{ v: usd(t.otros), s: 5 }] : [], [{ v: usd(-t.nc), s: 5 }, { v: usd(t.base), s: 5 }, { v: usd(t.iva), s: 5 }, { v: usd(t.total), s: 5 }]));
+  const widths = (conSede ? [11] : []).concat([11, 20, 13, 11, 15], DATA.servicios.map(() => 12), p.usaOtros ? [14] : [], [14, 14, 11, 12]);
+  return { name: conSede ? 'Ambas sedes' : DATA.sedes[sede].n, widths, rows };
+}
+function descargar(bytes, nombre) {
+  try {
+    const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = nombre;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+    toast('Descargado: ' + nombre);
+  } catch (e) { toast('No se pudo descargar el archivo en este navegador.'); }
+}
+function bajarReporte(p, mesN, mesK, sedes) {
+  descargar(libro(sedes.map((s) => hojaReporte(p, s, mesN))), 'Reporte_ventas_aeropuerto_' + (sedes.length === 1 ? DATA.sedes[sedes[0]] ? DATA.sedes[sedes[0]].n : 'Ambas' : 'Quito_Guayaquil') + '_' + mesK + '.xlsx');
+}
+function bajarOrigen() {
+  const hojas = Object.keys(HOJAS).map((k) => {
+    const h = HOJAS[k];
+    const raw = k === 'Facturas' ? ARCH.facturas.map((f) => [f.num, f.fecha, f.sede, f.cli, f.mat, f.tipo, usd(f.sub), usd(f.iva), usd(f.tot)])
+      : k === 'Detalle' ? ARCH.detalle.map((d) => [d.num, d.cod, d.art, d.q, usd(d.p), usd(d.v)])
+      : k === 'Clientes' ? ARCH.clientes.map((c) => [c.c, c.n, c.pais])
+      : ARCH.notas.map((n) => [n.nc, n.fecha, n.num, n.motivo, usd(n.v)]);
+    return { name: k, widths: h.cols.map(() => 16), rows: [h.cols.map((c) => ({ v: c, s: 1 }))].concat(raw.map((r) => r.map((c, i) => (h.num.includes(i) && typeof c === 'number' && !(k === 'Detalle' && i === 3) ? { v: c, s: 2 } : c)))) };
+  });
+  descargar(libro(hojas), DATA.archivo);
+}
+
+/* ===================== eventos ===================== */
+document.addEventListener('click', (e) => {
+  const go = e.target.closest('[data-go]');
+  if (go && !go.disabled) { const n = +go.dataset.go; if (puede(n)) { S.step = n; render(); window.scrollTo(0, 0); } return; }
+  const tab = e.target.closest('[data-tab]');
+  if (tab) { S.tab = tab.dataset.tab; render(); return; }
+  const sd = e.target.closest('[data-sede]');
+  if (sd) { S.sede = sd.dataset.sede; render(); return; }
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  const a = b.dataset.act;
+  if (a === 'cargar') { S.cargado = true; render('hoja'); toast('Archivo cargado: 4 pestañas reconocidas'); }
+  else if (a === 'bajarOrigen') bajarOrigen();
+  else if (a === 'ir2') { S.step = 2; render(); window.scrollTo(0, 0); }
+  else if (a === 'unir') {
+    const m = $('#merge'); if (m) m.classList.add('merged');
+    b.disabled = true; b.textContent = 'Uniendo…';
+    setTimeout(() => { S.unido = true; render('merge'); }, 900);
+  }
+  else if (a === 'ir3') { S.step = 3; render(); window.scrollTo(0, 0); }
+  else if (a === 'ir4') { S.step = 4; render(); window.scrollTo(0, 0); }
+  else if (a === 'ir5') { S.step = 5; S.guardado = true; render(); window.scrollTo(0, 0); }
+  else if (a === 'mat') { const v = ($('#inMat') || {}).value || ''; if (!v.trim()) { toast('Escriba la matrícula'); return; } S.fx.mat = v; render('avisos'); }
+  else if (a === 'matSug') { S.fx.mat = b.dataset.v; render('avisos'); }
+  else if (a === 'difDet') { S.fx.dif = 'detalle'; render('avisos'); }
+  else if (a === 'difCon') { S.fx.dif = 'consultar'; render('avisos'); toast('Marcada para consultar al proveedor'); }
+  else if (a === 'fechaNov') { S.fx.fecha = 'nov'; render('avisos'); }
+  else if (a === 'fechaInc') { S.fx.fecha = 'incluir'; render('avisos'); }
+  else if (a === 'artOtros') { S.fx.art = 'otros'; render('avisos'); }
+  else if (a === 'bajarRep') bajarReporte(P(), DATA.meses[2].n, DATA.mesActual, [S.sede]);
+  else if (a === 'bajarMes') {
+    const m = b.dataset.m;
+    if (m === 'nov') {
+      const p = P();
+      const archN = { facturas: ARCH.facturas.filter((f) => p.diferidas.some((d) => d.num === f.num)), detalle: ARCH.detalle.filter((d) => p.diferidas.some((x) => x.num === d.num)), clientes: DATA.clientes, notas: [] };
+      bajarReporte(procesar(archN, '2026-11', {}), 'Noviembre 2026 (avance)', '2026-11', ['UIO', 'GYE']);
+    } else if (m === '2') bajarReporte(P(), DATA.meses[2].n, DATA.mesActual, ['UIO', 'GYE']);
+    else { const x = PREV[+m]; bajarReporte(procesar(x.arch, x.m.k, {}), x.m.n, x.m.k, ['UIO', 'GYE']); }
+  }
+  else if (a === 'reiniciar') reiniciar();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.id === 'inMat') { e.preventDefault(); $('[data-act="mat"]').click(); } });
+function reiniciar() {
+  confirmar('¿Volver a empezar?', '<p class="hint">Se borra lo que hizo en este prototipo y vuelve al paso 1.</p>', () => { S = S0(); render(); window.scrollTo(0, 0); });
+}
+$('#btnReset').addEventListener('click', reiniciar);
+render();
+</script>
+</body>
+</html>
